@@ -37,15 +37,15 @@ export async function POST(req: Request) {
   const name = String(body?.name ?? "").trim();
   const maxPoints = Number(body?.maxPoints);
 
-  if (id <= 0) {
-    return NextResponse.json({ ok: false, error: "BAD_ID" }, { status: 400 });
-  }
-  if (name.length <= 0) {
-    return NextResponse.json({ ok: false, error: "BAD_NAME" }, { status: 400 });
-  }
-  if (maxPoints < 0) {
-    return NextResponse.json({ ok: false, error: "BAD_MAX_POINTS" }, { status: 400 });
-  }
+  // if (id <= 0) {
+  //   return NextResponse.json({ ok: false, error: "BAD_ID" }, { status: 400 });
+  // }
+  // if (name.length <= 0) {
+  //   return NextResponse.json({ ok: false, error: "BAD_NAME" }, { status: 400 });
+  // }
+  // if (maxPoints < 0) {
+  //   return NextResponse.json({ ok: false, error: "BAD_MAX_POINTS" }, { status: 400 });
+  // }
 
   // ВОТ ТУТ МАГИЯ: если id есть — update, если нет — create
   const client = await prisma.client.upsert({
