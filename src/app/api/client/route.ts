@@ -37,13 +37,13 @@ export async function POST(req: Request) {
   const name = String(body?.name ?? "").trim();
   const maxPoints = Number(body?.maxPoints);
 
-  if (!Number.isInteger(id) || id <= 0) {
+  if (id <= 0) {
     return NextResponse.json({ ok: false, error: "BAD_ID" }, { status: 400 });
   }
   if (!name) {
     return NextResponse.json({ ok: false, error: "BAD_NAME" }, { status: 400 });
   }
-  if (!Number.isFinite(maxPoints) || maxPoints < 0) {
+  if (maxPoints < 0) {
     return NextResponse.json({ ok: false, error: "BAD_MAX_POINTS" }, { status: 400 });
   }
 
