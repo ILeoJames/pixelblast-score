@@ -84,7 +84,7 @@ export function usePlayers(order: "asc" | "desc") {
     }
 
     run(true);
-    const t = setInterval(() => run(false), 3000);
+    const t = setInterval(() => run(false), 10_000);
 
     return () => {
       cancelled = true;
