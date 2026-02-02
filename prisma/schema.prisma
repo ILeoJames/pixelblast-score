@@ -72,7 +72,7 @@ model Verification {
 }
 
 model Client {
-  id        Int      @id
+  id        Int      @id @default(autoincrement())
   name      String
   maxPoints Int
   createdAt DateTime @default(now())
