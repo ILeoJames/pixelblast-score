@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 type ClientPayload = {
-  id: number;
+  id: string;
   name: string;
-  maxPoints: number;
+  maxPoints: string;
 };
 
 export async function GET() {
