@@ -9,13 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Row = {
   id: number;
@@ -51,6 +45,13 @@ function fmtAgo(msAgo: number) {
 }
 
 type LimitMode = "all" | "50" | "200";
+
+function Medal({ rank }: { rank: number }) {
+  if (rank === 1) return <span aria-label="gold medal">🥇</span>;
+  if (rank === 2) return <span aria-label="silver medal">🥈</span>;
+  if (rank === 3) return <span aria-label="bronze medal">🥉</span>;
+  return <span className="text-white/60">#{rank}</span>;
+}
 
 export default function HomePage() {
   const [items, setItems] = useState<Row[]>([]);
@@ -100,7 +101,6 @@ export default function HomePage() {
     }
   }
 
-  // автообновление + реакция на сортировку
   useEffect(() => {
     let cancelled = false;
 
@@ -151,12 +151,22 @@ export default function HomePage() {
 
   const top3 = useMemo(() => filtered.slice(0, 3), [filtered]);
 
-  // списки в сайд-карточках — покажем больше, но ограничим, чтобы не раздувать UI
   const listAll = useMemo(() => filtered.slice(0, 40), [filtered]);
   const listOnline = useMemo(() => filtered.filter((p) => now - p.updatedAt <= ONLINE_MS).slice(0, 40), [filtered, now]);
 
+  const statusPill = loading
+    ? "загрузка…"
+    : refreshing
+    ? "обновление…"
+    : "онлайн";
+
   return (
     <main className="relative min-h-screen overflow-hidden">
+      {/* === Animated neon layer (pure CSS) === */}
+      <div className="pointer-events-none absolute inset-0 -z-30 opacity-70">
+        <div className="neon-move absolute -inset-40 bg-[radial-gradient(circle_at_20%_20%,rgba(217,70,239,0.35),transparent_40%),radial-gradient(circle_at_80%_30%,rgba(34,211,238,0.28),transparent_45%),radial-gradient(circle_at_40%_90%,rgba(250,204,21,0.22),transparent_40%)]" />
+      </div>
+
       {/* Background image */}
       <div
         className="absolute inset-0 -z-20 bg-cover bg-center"
@@ -165,7 +175,23 @@ export default function HomePage() {
       />
       {/* Blur + overlay */}
       <div className="absolute inset-0 -z-10 backdrop-blur-3xl" aria-hidden="true" />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/65 via-black/55 to-black/75" aria-hidden="true" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/70 via-black/55 to-black/80" aria-hidden="true" />
+
+      {/* Local styles for animation */}
+      <style>{`
+        @keyframes neonMove {
+          0% { transform: translate3d(0,0,0) scale(1); filter: blur(0px); }
+          50% { transform: translate3d(-3%, 2%, 0) scale(1.06); filter: blur(2px); }
+          100% { transform: translate3d(0,0,0) scale(1); filter: blur(0px); }
+        }
+        .neon-move { animation: neonMove 14s ease-in-out infinite; }
+        @keyframes pulseDot {
+          0% { transform: scale(0.9); opacity: 0.7; }
+          50% { transform: scale(1.25); opacity: 1; }
+          100% { transform: scale(0.9); opacity: 0.7; }
+        }
+        .pulse-dot { animation: pulseDot 1.2s ease-in-out infinite; }
+      `}</style>
 
       <div className="mx-auto max-w-6xl px-4 py-10">
         {/* Header */}
@@ -205,13 +231,16 @@ export default function HomePage() {
                 </span>
               ) : null}
 
-              {loading ? (
-                <span className="rounded-full bg-white/10 px-3 py-1">загрузка…</span>
-              ) : refreshing ? (
-                <span className="rounded-full bg-white/10 px-3 py-1">обновление…</span>
-              ) : (
-                <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-emerald-200">онлайн</span>
-              )}
+              <span className="rounded-full bg-white/10 px-3 py-1 flex items-center gap-2">
+                <span
+                  className={[
+                    "h-2.5 w-2.5 rounded-full",
+                    loading ? "bg-white/40" : "bg-emerald-300/80",
+                    !loading ? "pulse-dot" : "",
+                  ].join(" ")}
+                />
+                {statusPill}
+              </span>
             </div>
           </div>
 
@@ -287,27 +316,30 @@ export default function HomePage() {
         <div className="mb-4 grid gap-3 md:grid-cols-3">
           {loading ? (
             <>
-              <Skeleton className="h-[120px] rounded-2xl bg-white/10" />
-              <Skeleton className="h-[120px] rounded-2xl bg-white/10" />
-              <Skeleton className="h-[120px] rounded-2xl bg-white/10" />
+              <Skeleton className="h-[128px] rounded-2xl bg-white/10" />
+              <Skeleton className="h-[128px] rounded-2xl bg-white/10" />
+              <Skeleton className="h-[128px] rounded-2xl bg-white/10" />
             </>
           ) : (
             top3.map((p, i) => {
               const isOnline = now - p.updatedAt <= ONLINE_MS;
+              const ago = now - p.updatedAt;
+
               return (
-                <Card key={p.id} className="rounded-2xl border-white/10 bg-white/10 text-white shadow-xl backdrop-blur-xl">
+                <Card
+                  key={p.id}
+                  className={[
+                    "rounded-2xl border-white/10 bg-white/10 text-white shadow-xl backdrop-blur-xl",
+                    i === 0 ? "ring-1 ring-yellow-400/30" : "",
+                    i === 1 ? "ring-1 ring-slate-200/20" : "",
+                    i === 2 ? "ring-1 ring-orange-400/25" : "",
+                  ].join(" ")}
+                >
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center justify-between text-lg">
                       <span className="truncate">{p.name}</span>
-                      <span
-                        className={[
-                          "rounded-full px-3 py-1 text-xs font-bold",
-                          i === 0 ? "bg-yellow-400/20 text-yellow-200" : "",
-                          i === 1 ? "bg-slate-200/15 text-slate-200" : "",
-                          i === 2 ? "bg-orange-400/15 text-orange-200" : "",
-                        ].join(" ")}
-                      >
-                        #{i + 1}
+                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold">
+                        <Medal rank={i + 1} />
                       </span>
                     </CardTitle>
                   </CardHeader>
@@ -319,11 +351,17 @@ export default function HomePage() {
                     </div>
 
                     <div className="text-right space-y-1">
-                      <Badge className={isOnline ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20" : "bg-white/10 text-white/80 hover:bg-white/15"}>
+                      <Badge
+                        className={
+                          isOnline
+                            ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20"
+                            : "bg-white/10 text-white/80 hover:bg-white/15"
+                        }
+                      >
                         {isOnline ? "online" : "offline"}
                       </Badge>
                       <div className="text-xs text-white/70">
-                        Last seen: <span className="text-white/90 font-semibold">{fmtAgo(now - p.updatedAt)}</span>
+                        Last seen: <span className="text-white/90 font-semibold">{fmtAgo(ago)}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -333,7 +371,7 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Lists (all + online) */}
+        {/* Lists */}
         <div className="mb-4 grid gap-3 md:grid-cols-2">
           {/* All players list */}
           <Card className="rounded-2xl border-white/10 bg-white/10 text-white shadow-2xl backdrop-blur-xl">
@@ -354,28 +392,37 @@ export default function HomePage() {
                 </div>
               ) : listAll.length === 0 ? (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-white/80">
-                  Ничего не найдено (проверь фильтры/поиск).
+                  Ничего не найдено (поиск/фильтры).
                 </div>
               ) : (
-                <div className="max-h-[340px] overflow-auto rounded-xl border border-white/10">
+                <div className="max-h-[350px] overflow-auto rounded-xl border border-white/10">
                   <ul className="divide-y divide-white/10">
                     {listAll.map((p, idx) => {
                       const isOnline = now - p.updatedAt <= ONLINE_MS;
+                      const ago = now - p.updatedAt;
                       return (
                         <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
                           <div className="min-w-0">
                             <div className="truncate font-semibold">
-                              <span className="mr-2 text-white/60">#{idx + 1}</span>
+                              <span className="mr-2 text-white/60">
+                                <Medal rank={idx + 1} />
+                              </span>
                               {p.name}
                             </div>
                             <div className="text-xs text-white/60">
-                              ID: {p.id} • Last seen: {fmtAgo(now - p.updatedAt)}
+                              ID: {p.id} • updatedAt: {new Date(p.updatedAt).toLocaleTimeString()} • Last seen: {fmtAgo(ago)}
                             </div>
                           </div>
 
                           <div className="text-right">
                             <div className="font-extrabold">{p.maxPoints.toLocaleString()}</div>
-                            <Badge className={isOnline ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20" : "bg-white/10 text-white/80 hover:bg-white/15"}>
+                            <Badge
+                              className={
+                                isOnline
+                                  ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20"
+                                  : "bg-white/10 text-white/80 hover:bg-white/15"
+                              }
+                            >
                               {isOnline ? "online" : "offline"}
                             </Badge>
                           </div>
@@ -388,7 +435,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          {/* Online players list */}
+          {/* Online list */}
           <Card className="rounded-2xl border-white/10 bg-white/10 text-white shadow-2xl backdrop-blur-xl">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center justify-between">
@@ -410,26 +457,32 @@ export default function HomePage() {
                   Сейчас никто не онлайн (или фильтры скрыли игроков).
                 </div>
               ) : (
-                <div className="max-h-[340px] overflow-auto rounded-xl border border-white/10">
+                <div className="max-h-[350px] overflow-auto rounded-xl border border-white/10">
                   <ul className="divide-y divide-white/10">
-                    {listOnline.map((p) => (
-                      <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                        <div className="min-w-0">
-                          <div className="truncate font-semibold">{p.name}</div>
-                          <div className="text-xs text-white/60">
-                            ID: {p.id} • Last seen:{" "}
-                            <span className="font-semibold text-emerald-200">{fmtAgo(now - p.updatedAt)}</span>
+                    {listOnline.map((p, idx) => {
+                      const ago = now - p.updatedAt;
+                      return (
+                        <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                          <div className="min-w-0">
+                            <div className="truncate font-semibold">
+                              <span className="mr-2 text-emerald-200/90">
+                                <Medal rank={idx + 1} />
+                              </span>
+                              {p.name}
+                            </div>
+                            <div className="text-xs text-white/60">
+                              ID: {p.id} • updatedAt: {new Date(p.updatedAt).toLocaleTimeString()} • Last seen:{" "}
+                              <span className="font-semibold text-emerald-200">{fmtAgo(ago)}</span>
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="text-right">
-                          <div className="font-extrabold">{p.maxPoints.toLocaleString()}</div>
-                          <Badge className="bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20">
-                            online
-                          </Badge>
-                        </div>
-                      </li>
-                    ))}
+                          <div className="text-right">
+                            <div className="font-extrabold">{p.maxPoints.toLocaleString()}</div>
+                            <Badge className="bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20">online</Badge>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
@@ -446,9 +499,7 @@ export default function HomePage() {
           <CardHeader className="pb-3">
             <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-white">
               <span>Таблица рейтинга</span>
-              <span className="text-xs text-white/60">
-                updatedAt показывает последнее обновление игрока
-              </span>
+              <span className="text-xs text-white/60">updatedAt + Last seen + online/offline</span>
             </CardTitle>
           </CardHeader>
 
@@ -484,7 +535,9 @@ export default function HomePage() {
                       return (
                         <TableRow key={p.id} className="border-white/10">
                           <TableCell className="font-bold">
-                            <span className="rounded-full bg-white/10 px-3 py-1 text-sm">{idx + 1}</span>
+                            <span className="rounded-full bg-white/10 px-3 py-1 text-sm">
+                              <Medal rank={idx + 1} />
+                            </span>
                           </TableCell>
 
                           <TableCell>
