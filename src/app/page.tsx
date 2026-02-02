@@ -165,19 +165,15 @@ export default function HomePage() {
           <PlayerLists items={filtered} now={now} onOpenPlayer={openPlayer} />
           <LeaderboardTable items={filtered} now={now} onOpenPlayer={openPlayer} />
 
-          <div className="mt-6 text-center text-xs text-white/60 space-y-1">
-            <div>
-              Разработчик игры:{" "}
-              <span className="font-semibold text-white/80">badcast</span>
-            </div>
-            <div>
-              Разработчик сайта:{" "}
-              <span className="font-semibold text-white/80">LeoJames</span>
-            </div>
-            <div>
-              Дизайнер игры:{" "}
-              <span className="font-semibold text-white/80">AIP</span>
-            </div>
+          <div className="mt-6 text-center text-xs text-white/60">
+            Разработчик игры:{" "}
+            <span className="font-semibold text-white/80">badcast</span>
+            <span className="mx-2 text-white/30">•</span>
+            Разработчик сайта:{" "}
+            <span className="font-semibold text-white/80">LeoJames</span>
+            <span className="mx-2 text-white/30">•</span>
+            Дизайнер игры:{" "}
+            <span className="font-semibold text-white/80">AIP</span>
           </div>
         </div>
       </div>
