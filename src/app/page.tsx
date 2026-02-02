@@ -7,6 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Row = {
   id: number;
@@ -21,8 +30,7 @@ type ApiResponse = ApiOk | ApiErr;
 
 function isApiResponse(v: unknown): v is ApiResponse {
   if (typeof v !== "object" || v === null) return false;
-  if (!("ok" in v)) return false;
-  return true;
+  return "ok" in v;
 }
 
 const ONLINE_MS = 10 * 60 * 1000; // 10 минут
@@ -42,6 +50,8 @@ function fmtAgo(msAgo: number) {
   return `${d}d ago`;
 }
 
+type LimitMode = "all" | "50" | "200";
+
 export default function HomePage() {
   const [items, setItems] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +60,11 @@ export default function HomePage() {
 
   const [order, setOrder] = useState<"desc" | "asc">("desc");
   const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
+
+  // UI controls
+  const [query, setQuery] = useState("");
+  const [onlineOnly, setOnlineOnly] = useState(false);
+  const [limitMode, setLimitMode] = useState<LimitMode>("all");
 
   async function load(opts?: { silent?: boolean }) {
     const silent = opts?.silent ?? false;
@@ -85,6 +100,7 @@ export default function HomePage() {
     }
   }
 
+  // автообновление + реакция на сортировку
   useEffect(() => {
     let cancelled = false;
 
@@ -103,24 +119,41 @@ export default function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order]);
 
+  const now = Date.now();
+
   const sorted = useMemo(() => {
     const arr = [...items];
     arr.sort((a, b) => (order === "desc" ? b.maxPoints - a.maxPoints : a.maxPoints - b.maxPoints));
     return arr;
   }, [items, order]);
 
-  const top3 = useMemo(() => sorted.slice(0, 3), [sorted]);
+  const online = useMemo(() => sorted.filter((p) => now - p.updatedAt <= ONLINE_MS), [sorted, now]);
 
-  const now = Date.now();
+  const normalizedQuery = query.trim().toLowerCase();
 
-  const online = useMemo(() => {
-    // online на основе updatedAt
-    return sorted.filter((p) => now - p.updatedAt <= ONLINE_MS);
-  }, [sorted, now]);
+  const filtered = useMemo(() => {
+    let base = onlineOnly ? online : sorted;
 
-  // компактные списки (можно увеличить)
-  const allList = useMemo(() => sorted.slice(0, 30), [sorted]);
-  const onlineList = useMemo(() => online.slice(0, 30), [online]);
+    if (normalizedQuery) {
+      base = base.filter((p) => p.name.toLowerCase().includes(normalizedQuery));
+    }
+
+    const lim = limitMode === "50" ? 50 : limitMode === "200" ? 200 : Infinity;
+    if (Number.isFinite(lim)) base = base.slice(0, lim);
+
+    return base;
+  }, [sorted, online, onlineOnly, normalizedQuery, limitMode]);
+
+  const shownOnlineCount = useMemo(
+    () => filtered.filter((p) => now - p.updatedAt <= ONLINE_MS).length,
+    [filtered, now]
+  );
+
+  const top3 = useMemo(() => filtered.slice(0, 3), [filtered]);
+
+  // списки в сайд-карточках — покажем больше, но ограничим, чтобы не раздувать UI
+  const listAll = useMemo(() => filtered.slice(0, 40), [filtered]);
+  const listOnline = useMemo(() => filtered.filter((p) => now - p.updatedAt <= ONLINE_MS).slice(0, 40), [filtered, now]);
 
   return (
     <main className="relative min-h-screen overflow-hidden">
@@ -155,6 +188,14 @@ export default function HomePage() {
                 онлайн: <span className="font-semibold text-emerald-100">{online.length}</span>
               </span>
 
+              <span className="rounded-full bg-white/10 px-3 py-1">
+                показано: <span className="font-semibold text-white">{filtered.length}</span>
+              </span>
+
+              <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-emerald-200">
+                онлайн в списке: <span className="font-semibold text-emerald-100">{shownOnlineCount}</span>
+              </span>
+
               {lastUpdatedAt ? (
                 <span className="rounded-full bg-white/10 px-3 py-1">
                   обновлено:{" "}
@@ -174,19 +215,63 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              className="bg-white/10 text-white hover:bg-white/15"
-              onClick={() => setOrder((p) => (p === "desc" ? "asc" : "desc"))}
-              disabled={loading}
-            >
-              maxPoints {order === "desc" ? "↓" : "↑"}
-            </Button>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                className="bg-white/10 text-white hover:bg-white/15"
+                onClick={() => setOrder((p) => (p === "desc" ? "asc" : "desc"))}
+                disabled={loading}
+              >
+                maxPoints {order === "desc" ? "↓" : "↑"}
+              </Button>
 
-            <Button className="bg-white text-black hover:bg-white/90" onClick={() => load({ silent: false })} disabled={loading}>
-              Обновить
-            </Button>
+              <Button
+                className="bg-white text-black hover:bg-white/90"
+                onClick={() => load({ silent: false })}
+                disabled={loading}
+              >
+                Обновить
+              </Button>
+            </div>
+
+            {/* Controls */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Поиск по никнейму…"
+                  className="w-[230px] border-white/10 bg-white/10 text-white placeholder:text-white/50 focus-visible:ring-white/20"
+                />
+                {query ? (
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs text-white/70 hover:bg-white/10"
+                    title="Очистить"
+                  >
+                    ✕
+                  </button>
+                ) : null}
+              </div>
+
+              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-3 py-2">
+                <Switch checked={onlineOnly} onCheckedChange={setOnlineOnly} />
+                <span className="text-sm text-white/80">только онлайн</span>
+              </div>
+
+              <Select value={limitMode} onValueChange={(v) => setLimitMode(v as LimitMode)}>
+                <SelectTrigger className="w-[150px] border-white/10 bg-white/10 text-white focus:ring-white/20">
+                  <SelectValue placeholder="Лимит" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все</SelectItem>
+                  <SelectItem value="50">ТОП 50</SelectItem>
+                  <SelectItem value="200">ТОП 200</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
@@ -198,51 +283,65 @@ export default function HomePage() {
           </div>
         ) : null}
 
-        {/* TOP 3 */}
+        {/* TOP 3 cards */}
         <div className="mb-4 grid gap-3 md:grid-cols-3">
           {loading ? (
             <>
-              <Skeleton className="h-[110px] rounded-2xl bg-white/10" />
-              <Skeleton className="h-[110px] rounded-2xl bg-white/10" />
-              <Skeleton className="h-[110px] rounded-2xl bg-white/10" />
+              <Skeleton className="h-[120px] rounded-2xl bg-white/10" />
+              <Skeleton className="h-[120px] rounded-2xl bg-white/10" />
+              <Skeleton className="h-[120px] rounded-2xl bg-white/10" />
             </>
           ) : (
-            top3.map((p, i) => (
-              <Card key={p.id} className="rounded-2xl border-white/10 bg-white/10 text-white shadow-xl backdrop-blur-xl">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center justify-between text-lg">
-                    <span className="truncate">{p.name}</span>
-                    <span
-                      className={[
-                        "rounded-full px-3 py-1 text-xs font-bold",
-                        i === 0 ? "bg-yellow-400/20 text-yellow-200" : "",
-                        i === 1 ? "bg-slate-200/15 text-slate-200" : "",
-                        i === 2 ? "bg-orange-400/15 text-orange-200" : "",
-                      ].join(" ")}
-                    >
-                      #{i + 1}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
+            top3.map((p, i) => {
+              const isOnline = now - p.updatedAt <= ONLINE_MS;
+              return (
+                <Card key={p.id} className="rounded-2xl border-white/10 bg-white/10 text-white shadow-xl backdrop-blur-xl">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center justify-between text-lg">
+                      <span className="truncate">{p.name}</span>
+                      <span
+                        className={[
+                          "rounded-full px-3 py-1 text-xs font-bold",
+                          i === 0 ? "bg-yellow-400/20 text-yellow-200" : "",
+                          i === 1 ? "bg-slate-200/15 text-slate-200" : "",
+                          i === 2 ? "bg-orange-400/15 text-orange-200" : "",
+                        ].join(" ")}
+                      >
+                        #{i + 1}
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
 
-                <CardContent className="flex items-end justify-between">
-                  <div className="text-sm text-white/70">maxPoints</div>
-                  <div className="text-2xl font-extrabold">{p.maxPoints.toLocaleString()}</div>
-                </CardContent>
-              </Card>
-            ))
+                  <CardContent className="flex items-end justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="text-sm text-white/70">maxPoints</div>
+                      <div className="text-2xl font-extrabold">{p.maxPoints.toLocaleString()}</div>
+                    </div>
+
+                    <div className="text-right space-y-1">
+                      <Badge className={isOnline ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20" : "bg-white/10 text-white/80 hover:bg-white/15"}>
+                        {isOnline ? "online" : "offline"}
+                      </Badge>
+                      <div className="text-xs text-white/70">
+                        Last seen: <span className="text-white/90 font-semibold">{fmtAgo(now - p.updatedAt)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
           )}
         </div>
 
-        {/* Lists */}
+        {/* Lists (all + online) */}
         <div className="mb-4 grid gap-3 md:grid-cols-2">
           {/* All players list */}
           <Card className="rounded-2xl border-white/10 bg-white/10 text-white shadow-2xl backdrop-blur-xl">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center justify-between">
-                <span>Все игроки</span>
+                <span>Список игроков</span>
                 <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/15">
-                  показано: {Math.min(allList.length, 30)}
+                  показано: {Math.min(listAll.length, 40)}
                 </Badge>
               </CardTitle>
             </CardHeader>
@@ -253,26 +352,36 @@ export default function HomePage() {
                   <Skeleton className="h-9 w-full rounded-xl bg-white/10" />
                   <Skeleton className="h-9 w-full rounded-xl bg-white/10" />
                 </div>
-              ) : allList.length === 0 ? (
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-white/80">Пока пусто.</div>
+              ) : listAll.length === 0 ? (
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-white/80">
+                  Ничего не найдено (проверь фильтры/поиск).
+                </div>
               ) : (
-                <div className="max-h-[320px] overflow-auto rounded-xl border border-white/10">
+                <div className="max-h-[340px] overflow-auto rounded-xl border border-white/10">
                   <ul className="divide-y divide-white/10">
-                    {allList.map((p, idx) => (
-                      <li key={p.id} className="flex items-center justify-between px-4 py-3">
-                        <div className="min-w-0">
-                          <div className="truncate font-semibold">
-                            <span className="text-white/60 mr-2">#{idx + 1}</span>
-                            {p.name}
+                    {listAll.map((p, idx) => {
+                      const isOnline = now - p.updatedAt <= ONLINE_MS;
+                      return (
+                        <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                          <div className="min-w-0">
+                            <div className="truncate font-semibold">
+                              <span className="mr-2 text-white/60">#{idx + 1}</span>
+                              {p.name}
+                            </div>
+                            <div className="text-xs text-white/60">
+                              ID: {p.id} • Last seen: {fmtAgo(now - p.updatedAt)}
+                            </div>
                           </div>
-                          <div className="text-xs text-white/60">ID: {p.id}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-extrabold">{p.maxPoints.toLocaleString()}</div>
-                          <div className="text-xs text-white/60">{fmtAgo(now - p.updatedAt)}</div>
-                        </div>
-                      </li>
-                    ))}
+
+                          <div className="text-right">
+                            <div className="font-extrabold">{p.maxPoints.toLocaleString()}</div>
+                            <Badge className={isOnline ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20" : "bg-white/10 text-white/80 hover:bg-white/15"}>
+                              {isOnline ? "online" : "offline"}
+                            </Badge>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
@@ -285,7 +394,7 @@ export default function HomePage() {
               <CardTitle className="flex items-center justify-between">
                 <span>Онлайн игроки</span>
                 <Badge className="bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20">
-                  онлайн: {online.length}
+                  онлайн: {listOnline.length}
                 </Badge>
               </CardTitle>
             </CardHeader>
@@ -296,22 +405,28 @@ export default function HomePage() {
                   <Skeleton className="h-9 w-full rounded-xl bg-white/10" />
                   <Skeleton className="h-9 w-full rounded-xl bg-white/10" />
                 </div>
-              ) : onlineList.length === 0 ? (
+              ) : listOnline.length === 0 ? (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-white/80">
-                  Сейчас никто не онлайн (обновление было &gt; 10 минут назад).
+                  Сейчас никто не онлайн (или фильтры скрыли игроков).
                 </div>
               ) : (
-                <div className="max-h-[320px] overflow-auto rounded-xl border border-white/10">
+                <div className="max-h-[340px] overflow-auto rounded-xl border border-white/10">
                   <ul className="divide-y divide-white/10">
-                    {onlineList.map((p) => (
-                      <li key={p.id} className="flex items-center justify-between px-4 py-3">
+                    {listOnline.map((p) => (
+                      <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
                         <div className="min-w-0">
                           <div className="truncate font-semibold">{p.name}</div>
-                          <div className="text-xs text-white/60">ID: {p.id}</div>
+                          <div className="text-xs text-white/60">
+                            ID: {p.id} • Last seen:{" "}
+                            <span className="font-semibold text-emerald-200">{fmtAgo(now - p.updatedAt)}</span>
+                          </div>
                         </div>
+
                         <div className="text-right">
                           <div className="font-extrabold">{p.maxPoints.toLocaleString()}</div>
-                          <div className="text-xs text-emerald-200/90">{fmtAgo(now - p.updatedAt)}</div>
+                          <Badge className="bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20">
+                            online
+                          </Badge>
                         </div>
                       </li>
                     ))}
@@ -320,7 +435,7 @@ export default function HomePage() {
               )}
 
               <div className="mt-3 text-xs text-white/60">
-                Онлайн = последнее обновление ≤ <span className="text-white/80 font-semibold">10 минут</span>.
+                Онлайн = последнее обновление ≤ <span className="font-semibold text-white/80">10 минут</span>.
               </div>
             </CardContent>
           </Card>
@@ -329,7 +444,12 @@ export default function HomePage() {
         {/* Table */}
         <Card className="rounded-2xl border-white/10 bg-white/10 text-white shadow-2xl backdrop-blur-xl">
           <CardHeader className="pb-3">
-            <CardTitle className="text-white">Таблица рейтинга</CardTitle>
+            <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-white">
+              <span>Таблица рейтинга</span>
+              <span className="text-xs text-white/60">
+                updatedAt показывает последнее обновление игрока
+              </span>
+            </CardTitle>
           </CardHeader>
 
           <CardContent>
@@ -339,9 +459,9 @@ export default function HomePage() {
                 <Skeleton className="h-10 w-full rounded-xl bg-white/10" />
                 <Skeleton className="h-10 w-full rounded-xl bg-white/10" />
               </div>
-            ) : sorted.length === 0 ? (
+            ) : filtered.length === 0 ? (
               <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-white/80">
-                Пока нет игроков. Отправь POST на <span className="font-semibold text-white">/api/client</span>.
+                Ничего не найдено (поиск/фильтры).
               </div>
             ) : (
               <div className="overflow-hidden rounded-xl border border-white/10">
@@ -352,12 +472,15 @@ export default function HomePage() {
                       <TableHead className="text-white/80">Игрок</TableHead>
                       <TableHead className="text-right text-white/80">maxPoints</TableHead>
                       <TableHead className="text-right text-white/80">updatedAt</TableHead>
+                      <TableHead className="text-right text-white/80">Last seen</TableHead>
                     </TableRow>
                   </TableHeader>
 
                   <TableBody>
-                    {sorted.map((p, idx) => {
+                    {filtered.map((p, idx) => {
                       const isOnline = now - p.updatedAt <= ONLINE_MS;
+                      const ago = now - p.updatedAt;
+
                       return (
                         <TableRow key={p.id} className="border-white/10">
                           <TableCell className="font-bold">
@@ -370,15 +493,15 @@ export default function HomePage() {
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2">
                                   <div className="truncate font-semibold">{p.name}</div>
-                                  {isOnline ? (
-                                    <span className="rounded-full bg-emerald-400/15 px-2 py-0.5 text-xs font-semibold text-emerald-200">
-                                      online
-                                    </span>
-                                  ) : (
-                                    <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/70">
-                                      offline
-                                    </span>
-                                  )}
+                                  <Badge
+                                    className={
+                                      isOnline
+                                        ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20"
+                                        : "bg-white/10 text-white/80 hover:bg-white/15"
+                                    }
+                                  >
+                                    {isOnline ? "online" : "offline"}
+                                  </Badge>
                                 </div>
                                 <div className="text-xs text-white/60">ID: {p.id}</div>
                               </div>
@@ -389,9 +512,14 @@ export default function HomePage() {
                             {p.maxPoints.toLocaleString()}
                           </TableCell>
 
+                          <TableCell className="text-right text-sm font-semibold text-white/90">
+                            {fmtTime(p.updatedAt)}
+                          </TableCell>
+
                           <TableCell className="text-right">
-                            <div className="text-sm font-semibold text-white/90">{fmtTime(p.updatedAt)}</div>
-                            <div className="text-xs text-white/60">{fmtAgo(now - p.updatedAt)}</div>
+                            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">
+                              {fmtAgo(ago)}
+                            </span>
                           </TableCell>
                         </TableRow>
                       );
@@ -403,7 +531,9 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        <div className="mt-6 text-center text-xs text-white/50">Pixelblast leaderboard • данные обновляются автоматически</div>
+        <div className="mt-6 text-center text-xs text-white/50">
+          Pixelblast leaderboard • поиск/фильтры работают поверх данных • автообновление 3 секунды
+        </div>
       </div>
     </main>
   );
