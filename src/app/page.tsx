@@ -88,19 +88,19 @@ export default function HomePage() {
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
                 <span className="bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(255,255,255,0.18)]">
-                  ТОП игроков
+                  ТОП ИГРОКОВ
                 </span>{" "}
                 <span className="bg-gradient-to-r from-fuchsia-300 via-cyan-200 to-emerald-200 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(56,189,248,0.18)]">
-                  pixelblast
+                  PIXELBLAST
                 </span>
               </h1>
-              <div className="text-xs text-white/60">Живой рейтинг • автообновление • онлайн статус</div>
+              <div className="text-xs text-white/60">В размышлениях, приходит истина...</div>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-sm text-white/80 tabular-nums">
             <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/15">
-              автообновление 3с
+              автообновление
             </Badge>
 
             <span className="rounded-full bg-white/10 px-3 py-1">
