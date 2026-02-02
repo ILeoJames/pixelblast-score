@@ -82,50 +82,58 @@ export default function HomePage() {
 
       <div className="mx-auto max-w-6xl px-4 py-10">
         {/* Header */}
-        <div className="mb-4 space-y-3">
-          <div className="inline-flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-fuchsia-500/40 to-cyan-400/25 ring-1 ring-white/10 shadow-[0_0_30px_rgba(56,189,248,0.15)]" />
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-                <span className="bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(255,255,255,0.18)]">
-                  ТОП ИГРОКОВ
-                </span>{" "}
-                <span className="bg-gradient-to-r from-fuchsia-300 via-cyan-200 to-emerald-200 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(56,189,248,0.18)]">
-                  PIXELBLAST
-                </span>
-              </h1>
-              <div className="text-xs text-white/60">В размышлениях, приходит истина...</div>
-            </div>
-          </div>
+<div className="mb-6 space-y-4">
+  {/* Title centered */}
+  <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+    <div className="mb-3 flex items-center gap-3">
+      <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-fuchsia-500/40 to-cyan-400/25 ring-1 ring-white/10 shadow-[0_0_30px_rgba(56,189,248,0.15)]" />
+      <div>
+        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+          <span className="bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(255,255,255,0.18)]">
+            ТОП ИГРОКОВ
+          </span>{" "}
+          <span className="bg-gradient-to-r from-fuchsia-300 via-cyan-200 to-emerald-200 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(56,189,248,0.18)]">
+            PIXELBLAST
+          </span>
+        </h1>
+        <div className="mt-1 text-xs text-white/60">В размышлениях, приходит истина...</div>
+      </div>
+    </div>
+  </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-sm text-white/80 tabular-nums">
-            <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/15">
-              автообновление
-            </Badge>
+  {/* Stats centered */}
+  <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-2 text-sm text-white/80 tabular-nums">
+    <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/15">
+      автообновление
+    </Badge>
 
-            <span className="rounded-full bg-white/10 px-3 py-1">
-              всего: <span className="font-semibold text-white">{items.length}</span>
-            </span>
+    <span className="rounded-full bg-white/10 px-3 py-1">
+      всего: <span className="font-semibold text-white">{items.length}</span>
+    </span>
 
-            <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-emerald-200">
-              онлайн: <span className="font-semibold text-emerald-100">{online.length}</span>
-            </span>
+    <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-emerald-200">
+      онлайн: <span className="font-semibold text-emerald-100">{online.length}</span>
+    </span>
 
-            <span className="rounded-full bg-white/10 px-3 py-1">
-              показано: <span className="font-semibold text-white">{filtered.length}</span>
-            </span>
+    <span className="rounded-full bg-white/10 px-3 py-1">
+      показано: <span className="font-semibold text-white">{filtered.length}</span>
+    </span>
 
-            <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-emerald-200">
-              онлайн в списке: <span className="font-semibold text-emerald-100">{shownOnlineCount}</span>
-            </span>
+    <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-emerald-200">
+      онлайн в списке: <span className="font-semibold text-emerald-100">{shownOnlineCount}</span>
+    </span>
 
-            {lastUpdatedAt ? (
-              <span className="rounded-full bg-white/10 px-3 py-1">
-                обновлено: <span className="font-semibold text-white">{new Date(lastUpdatedAt).toLocaleTimeString()}</span>
-              </span>
-            ) : null}
-          </div>
+    {lastUpdatedAt ? (
+      <span className="rounded-full bg-white/10 px-3 py-1">
+        обновлено:{" "}
+        <span className="font-semibold text-white">
+          {new Date(lastUpdatedAt).toLocaleTimeString()}
+        </span>
+        </span>
+          ) : null}
         </div>
+        </div>
+
 
         {/* Controls */}
         <ControlBar
