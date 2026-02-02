@@ -4,7 +4,13 @@ import { memo, useDeferredValue } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type LimitMode = "all" | "50" | "200";
 type Status = "loading" | "refreshing" | "online";
@@ -28,40 +34,57 @@ type Props = {
 };
 
 export const ControlBar = memo(function ControlBar(props: Props) {
-  const { order, onToggleOrder, onRefresh, disabled, status, query, setQuery, onlineOnly, setOnlineOnly, limitMode, setLimitMode } =
-    props;
+  const {
+    order,
+    onToggleOrder,
+    onRefresh,
+    disabled,
+    status,
+    query,
+    setQuery,
+    onlineOnly,
+    setOnlineOnly,
+    limitMode,
+    setLimitMode,
+  } = props;
 
-  // уменьшает лаги при наборе на больших списках
   const dq = useDeferredValue(query);
 
   const dot =
-    status === "loading" ? "bg-white/40" : status === "refreshing" ? "bg-yellow-300/70" : "bg-emerald-300/80";
+    status === "loading"
+      ? "bg-white/40"
+      : status === "refreshing"
+      ? "bg-yellow-300/70"
+      : "bg-emerald-300/80";
 
-  const statusText = status === "loading" ? "загрузка" : status === "refreshing" ? "обновление" : "онлайн";
+  const statusText =
+    status === "loading"
+      ? "загрузка"
+      : status === "refreshing"
+      ? "обновление"
+      : "онлайн";
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-[auto_1fr] sm:items-center">
+      {/* Левая часть: обновление + статус */}
       <div className="flex items-center gap-2">
         <Button
-          variant="secondary"
-          className="h-10 min-w-[128px] bg-white/10 text-white hover:bg-white/15"
-          onClick={onToggleOrder}
+          className="h-10 min-w-[128px] bg-white text-black hover:bg-white/90"
+          onClick={onRefresh}
           disabled={disabled}
         >
-          maxPoints {order === "desc" ? "↓" : "↑"}
-        </Button>
-
-        <Button className="h-10 min-w-[128px] bg-white text-black hover:bg-white/90" onClick={onRefresh} disabled={disabled}>
           {status === "refreshing" ? "Обновляю…" : "Обновить"}
         </Button>
 
-        <div className="ml-1 flex h-10 min-w-[140px] items-center justify-center rounded-xl border border-white/10 bg-white/10 px-3 tabular-nums">
+        <div className="flex h-10 min-w-[140px] items-center justify-center rounded-xl border border-white/10 bg-white/10 px-3 tabular-nums">
           <span className={`mr-2 h-2.5 w-2.5 rounded-full ${dot}`} />
           <span className="text-sm text-white/80">{statusText}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto_auto] sm:justify-end">
+      {/* Правая часть: поиск → сортировка → фильтры */}
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto_auto_auto] sm:justify-end">
+        {/* Поиск */}
         <div className="relative">
           <Input
             value={dq}
@@ -81,12 +104,29 @@ export const ControlBar = memo(function ControlBar(props: Props) {
           ) : null}
         </div>
 
+        {/* ✅ КНОПКА maxPoints теперь после поиска */}
+        <Button
+          variant="secondary"
+          className="h-10 min-w-[128px] bg-white/10 text-white hover:bg-white/15"
+          onClick={onToggleOrder}
+          disabled={disabled}
+        >
+          maxPoints {order === "desc" ? "↓" : "↑"}
+        </Button>
+
+        {/* Только онлайн */}
         <div className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-3">
           <Switch checked={onlineOnly} onCheckedChange={setOnlineOnly} />
-          <span className="whitespace-nowrap text-sm text-white/80">только онлайн</span>
+          <span className="whitespace-nowrap text-sm text-white/80">
+            только онлайн
+          </span>
         </div>
 
-        <Select value={limitMode} onValueChange={(v) => setLimitMode(v as LimitMode)}>
+        {/* Лимит */}
+        <Select
+          value={limitMode}
+          onValueChange={(v) => setLimitMode(v as LimitMode)}
+        >
           <SelectTrigger className="h-10 w-[160px] border-white/10 bg-white/10 text-white focus:ring-white/20">
             <SelectValue placeholder="Лимит" />
           </SelectTrigger>
