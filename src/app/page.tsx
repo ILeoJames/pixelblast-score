@@ -12,7 +12,7 @@ type Row = {
   id: number;
   name: string;
   maxPoints: number;
-  updatedAt: number;
+  updatedAt: number; // ms
 };
 
 type ApiOk = { ok: true; data: { items: Row[]; order?: "asc" | "desc" } };
@@ -23,6 +23,23 @@ function isApiResponse(v: unknown): v is ApiResponse {
   if (typeof v !== "object" || v === null) return false;
   if (!("ok" in v)) return false;
   return true;
+}
+
+const ONLINE_MS = 10 * 60 * 1000; // 10 минут
+
+function fmtTime(ts: number) {
+  return new Date(ts).toLocaleString();
+}
+
+function fmtAgo(msAgo: number) {
+  const s = Math.floor(msAgo / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 48) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
 }
 
 export default function HomePage() {
@@ -94,6 +111,17 @@ export default function HomePage() {
 
   const top3 = useMemo(() => sorted.slice(0, 3), [sorted]);
 
+  const now = Date.now();
+
+  const online = useMemo(() => {
+    // online на основе updatedAt
+    return sorted.filter((p) => now - p.updatedAt <= ONLINE_MS);
+  }, [sorted, now]);
+
+  // компактные списки (можно увеличить)
+  const allList = useMemo(() => sorted.slice(0, 30), [sorted]);
+  const onlineList = useMemo(() => online.slice(0, 30), [online]);
+
   return (
     <main className="relative min-h-screen overflow-hidden">
       {/* Background image */}
@@ -102,26 +130,37 @@ export default function HomePage() {
         style={{ backgroundImage: "url(/bg.jpg)" }}
         aria-hidden="true"
       />
-      {/* Blur + dark overlay */}
+      {/* Blur + overlay */}
       <div className="absolute inset-0 -z-10 backdrop-blur-3xl" aria-hidden="true" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/65 via-black/55 to-black/75" aria-hidden="true" />
 
-      <div className="mx-auto max-w-5xl px-4 py-10">
+      <div className="mx-auto max-w-6xl px-4 py-10">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              ТОП ИГРОКОВ <span className="text-white/80">PIXELBLAST</span>
+              ТОП игроков <span className="text-white/80">pixelblast</span>
             </h1>
 
             <div className="flex flex-wrap items-center gap-2 text-sm text-white/80">
               <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/15">
-                Автообновление 3с
+                автообновление 3с
               </Badge>
+
+              <span className="rounded-full bg-white/10 px-3 py-1">
+                всего: <span className="font-semibold text-white">{items.length}</span>
+              </span>
+
+              <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-emerald-200">
+                онлайн: <span className="font-semibold text-emerald-100">{online.length}</span>
+              </span>
 
               {lastUpdatedAt ? (
                 <span className="rounded-full bg-white/10 px-3 py-1">
-                  обновлено: <span className="font-semibold text-white">{new Date(lastUpdatedAt).toLocaleTimeString()}</span>
+                  обновлено:{" "}
+                  <span className="font-semibold text-white">
+                    {new Date(lastUpdatedAt).toLocaleTimeString()}
+                  </span>
                 </span>
               ) : null}
 
@@ -142,7 +181,7 @@ export default function HomePage() {
               onClick={() => setOrder((p) => (p === "desc" ? "asc" : "desc"))}
               disabled={loading}
             >
-              Рейтинг {order === "desc" ? "↓" : "↑"}
+              maxPoints {order === "desc" ? "↓" : "↑"}
             </Button>
 
             <Button className="bg-white text-black hover:bg-white/90" onClick={() => load({ silent: false })} disabled={loading}>
@@ -159,7 +198,7 @@ export default function HomePage() {
           </div>
         ) : null}
 
-        {/* TOP 3 cards */}
+        {/* TOP 3 */}
         <div className="mb-4 grid gap-3 md:grid-cols-3">
           {loading ? (
             <>
@@ -169,10 +208,7 @@ export default function HomePage() {
             </>
           ) : (
             top3.map((p, i) => (
-              <Card
-                key={p.id}
-                className="rounded-2xl border-white/10 bg-white/10 text-white shadow-xl backdrop-blur-xl"
-              >
+              <Card key={p.id} className="rounded-2xl border-white/10 bg-white/10 text-white shadow-xl backdrop-blur-xl">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between text-lg">
                     <span className="truncate">{p.name}</span>
@@ -188,13 +224,106 @@ export default function HomePage() {
                     </span>
                   </CardTitle>
                 </CardHeader>
+
                 <CardContent className="flex items-end justify-between">
-                  <div className="text-sm text-white/70">Рейтинг</div>
+                  <div className="text-sm text-white/70">maxPoints</div>
                   <div className="text-2xl font-extrabold">{p.maxPoints.toLocaleString()}</div>
                 </CardContent>
               </Card>
             ))
           )}
+        </div>
+
+        {/* Lists */}
+        <div className="mb-4 grid gap-3 md:grid-cols-2">
+          {/* All players list */}
+          <Card className="rounded-2xl border-white/10 bg-white/10 text-white shadow-2xl backdrop-blur-xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between">
+                <span>Все игроки</span>
+                <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/15">
+                  показано: {Math.min(allList.length, 30)}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-9 w-full rounded-xl bg-white/10" />
+                  <Skeleton className="h-9 w-full rounded-xl bg-white/10" />
+                  <Skeleton className="h-9 w-full rounded-xl bg-white/10" />
+                </div>
+              ) : allList.length === 0 ? (
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-white/80">Пока пусто.</div>
+              ) : (
+                <div className="max-h-[320px] overflow-auto rounded-xl border border-white/10">
+                  <ul className="divide-y divide-white/10">
+                    {allList.map((p, idx) => (
+                      <li key={p.id} className="flex items-center justify-between px-4 py-3">
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold">
+                            <span className="text-white/60 mr-2">#{idx + 1}</span>
+                            {p.name}
+                          </div>
+                          <div className="text-xs text-white/60">ID: {p.id}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-extrabold">{p.maxPoints.toLocaleString()}</div>
+                          <div className="text-xs text-white/60">{fmtAgo(now - p.updatedAt)}</div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Online players list */}
+          <Card className="rounded-2xl border-white/10 bg-white/10 text-white shadow-2xl backdrop-blur-xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between">
+                <span>Онлайн игроки</span>
+                <Badge className="bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/20">
+                  онлайн: {online.length}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-9 w-full rounded-xl bg-white/10" />
+                  <Skeleton className="h-9 w-full rounded-xl bg-white/10" />
+                  <Skeleton className="h-9 w-full rounded-xl bg-white/10" />
+                </div>
+              ) : onlineList.length === 0 ? (
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-white/80">
+                  Сейчас никто не онлайн (обновление было &gt; 10 минут назад).
+                </div>
+              ) : (
+                <div className="max-h-[320px] overflow-auto rounded-xl border border-white/10">
+                  <ul className="divide-y divide-white/10">
+                    {onlineList.map((p) => (
+                      <li key={p.id} className="flex items-center justify-between px-4 py-3">
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold">{p.name}</div>
+                          <div className="text-xs text-white/60">ID: {p.id}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-extrabold">{p.maxPoints.toLocaleString()}</div>
+                          <div className="text-xs text-emerald-200/90">{fmtAgo(now - p.updatedAt)}</div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="mt-3 text-xs text-white/60">
+                Онлайн = последнее обновление ≤ <span className="text-white/80 font-semibold">10 минут</span>.
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Table */}
@@ -222,33 +351,51 @@ export default function HomePage() {
                       <TableHead className="w-[90px] text-white/80">#</TableHead>
                       <TableHead className="text-white/80">Игрок</TableHead>
                       <TableHead className="text-right text-white/80">maxPoints</TableHead>
+                      <TableHead className="text-right text-white/80">updatedAt</TableHead>
                     </TableRow>
                   </TableHeader>
 
                   <TableBody>
-                    {sorted.map((p, idx) => (
-                      <TableRow key={p.id} className="border-white/10">
-                        <TableCell className="font-bold">
-                          <span className="rounded-full bg-white/10 px-3 py-1 text-sm">
-                            {idx + 1}
-                          </span>
-                        </TableCell>
+                    {sorted.map((p, idx) => {
+                      const isOnline = now - p.updatedAt <= ONLINE_MS;
+                      return (
+                        <TableRow key={p.id} className="border-white/10">
+                          <TableCell className="font-bold">
+                            <span className="rounded-full bg-white/10 px-3 py-1 text-sm">{idx + 1}</span>
+                          </TableCell>
 
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-fuchsia-500/30 to-cyan-400/20 ring-1 ring-white/10" />
-                            <div className="min-w-0">
-                              <div className="truncate font-semibold">{p.name}</div>
-                              <div className="text-xs text-white/60">ID: {p.id}</div>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-fuchsia-500/30 to-cyan-400/20 ring-1 ring-white/10" />
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <div className="truncate font-semibold">{p.name}</div>
+                                  {isOnline ? (
+                                    <span className="rounded-full bg-emerald-400/15 px-2 py-0.5 text-xs font-semibold text-emerald-200">
+                                      online
+                                    </span>
+                                  ) : (
+                                    <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/70">
+                                      offline
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-xs text-white/60">ID: {p.id}</div>
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
+                          </TableCell>
 
-                        <TableCell className="text-right text-lg font-extrabold">
-                          {p.maxPoints.toLocaleString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                          <TableCell className="text-right text-lg font-extrabold">
+                            {p.maxPoints.toLocaleString()}
+                          </TableCell>
+
+                          <TableCell className="text-right">
+                            <div className="text-sm font-semibold text-white/90">{fmtTime(p.updatedAt)}</div>
+                            <div className="text-xs text-white/60">{fmtAgo(now - p.updatedAt)}</div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
@@ -256,9 +403,7 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        <div className="mt-6 text-center text-xs text-white/50">
-          Created by LeoJames & badcast & AIP
-        </div>
+        <div className="mt-6 text-center text-xs text-white/50">Pixelblast leaderboard • данные обновляются автоматически</div>
       </div>
     </main>
   );
