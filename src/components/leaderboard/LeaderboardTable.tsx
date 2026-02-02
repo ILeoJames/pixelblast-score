@@ -35,7 +35,7 @@ export function LeaderboardTable({
                 <TableRow className="border-white/10 bg-white/5">
                   <TableHead className="w-[90px] text-white/80">#</TableHead>
                   <TableHead className="text-white/80">Игрок</TableHead>
-                  <TableHead className="text-right text-white/80">maxPoints</TableHead>
+                  <TableHead className="text-right text-white/80">Рейтинг</TableHead>
                   <TableHead className="text-right text-white/80">updatedAt</TableHead>
                   <TableHead className="text-right text-white/80">Last seen</TableHead>
                 </TableRow>

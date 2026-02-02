@@ -111,7 +111,7 @@ export const ControlBar = memo(function ControlBar(props: Props) {
           onClick={onToggleOrder}
           disabled={disabled}
         >
-          maxPoints {order === "desc" ? "↓" : "↑"}
+          Рейтинг {order === "desc" ? "↓" : "↑"}
         </Button>
 
         {/* Только онлайн */}

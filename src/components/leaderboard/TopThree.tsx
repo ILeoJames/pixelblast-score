@@ -56,7 +56,7 @@ export function TopThree({
 
             <CardContent className="flex items-end justify-between gap-3">
               <div className="space-y-1">
-                <div className="text-sm text-white/70">maxPoints</div>
+                <div className="text-sm text-white/70">Рейтинг</div>
                 <div className="text-2xl font-extrabold">{p.maxPoints.toLocaleString()}</div>
               </div>
 

@@ -40,7 +40,7 @@ export function PlayerQuickModal({ open, onOpenChange, player, now }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-              <div className="text-sm text-white/70">maxPoints</div>
+              <div className="text-sm text-white/70">Рейтинг</div>
               <div className="text-xl font-extrabold">{player.maxPoints.toLocaleString()}</div>
             </div>
 

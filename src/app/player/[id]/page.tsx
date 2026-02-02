@@ -129,7 +129,7 @@ export default async function PlayerPage({ params }: { params: { id: string } })
                   <TableHeader>
                     <TableRow className="border-white/10 bg-white/5">
                       <TableHead className="w-[80px] text-white/80">#</TableHead>
-                      <TableHead className="text-right text-white/80">maxPoints</TableHead>
+                      <TableHead className="text-right text-white/80">Рейтинг</TableHead>
                       <TableHead className="text-right text-white/80">createdAt</TableHead>
                     </TableRow>
                   </TableHeader>

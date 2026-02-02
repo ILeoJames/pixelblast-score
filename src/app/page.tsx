@@ -16,7 +16,6 @@ import { LeaderboardTable } from "@/components/leaderboard/LeaderboardTable";
 import { PlayerQuickModal } from "@/components/player/PlayerQuickModal";
 import type { PlayerRow } from "@/hooks/usePlayers";
 
-
 type LimitMode = "all" | "50" | "200";
 
 export default function HomePage() {
@@ -24,6 +23,13 @@ export default function HomePage() {
   const [query, setQuery] = useState("");
   const [onlineOnly, setOnlineOnly] = useState(false);
   const [limitMode, setLimitMode] = useState<LimitMode>("all");
+
+  const { items, loading, error, lastUpdatedAt, load, status } = usePlayers(order);
+
+  // "текущее время" как state (чтобы не вызывать Date.now в render)
+  const now = useNow(5000);
+
+  // modal
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerRow | null>(null);
 
@@ -31,12 +37,6 @@ export default function HomePage() {
     setSelectedPlayer(p);
     setModalOpen(true);
   };
-
-
-  const { items, loading, error, lastUpdatedAt, load, status } = usePlayers(order);
-
-  // ✅ теперь "текущее время" — state (не Date.now в render)
-  const now = useNow(5000);
 
   const sorted = useMemo(() => {
     const arr = [...items];
@@ -68,15 +68,35 @@ export default function HomePage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden">
-      <div className="absolute inset-0 -z-20 bg-cover bg-center" style={{ backgroundImage: "url(/bg.jpg)" }} aria-hidden="true" />
+      {/* Background */}
+      <div
+        className="absolute inset-0 -z-20 bg-cover bg-center"
+        style={{ backgroundImage: "url(/bg.jpg)" }}
+        aria-hidden="true"
+      />
       <div className="absolute inset-0 -z-10 backdrop-blur-xl" aria-hidden="true" />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/60 via-black/50 to-black/70" aria-hidden="true" />
+      <div
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-black/60 via-black/50 to-black/70"
+        aria-hidden="true"
+      />
 
       <div className="mx-auto max-w-6xl px-4 py-10">
-        <div className="mb-4 space-y-2">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            ТОП игроков <span className="text-white/80">pixelblast</span>
-          </h1>
+        {/* Header */}
+        <div className="mb-4 space-y-3">
+          <div className="inline-flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-fuchsia-500/40 to-cyan-400/25 ring-1 ring-white/10 shadow-[0_0_30px_rgba(56,189,248,0.15)]" />
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+                <span className="bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(255,255,255,0.18)]">
+                  ТОП игроков
+                </span>{" "}
+                <span className="bg-gradient-to-r from-fuchsia-300 via-cyan-200 to-emerald-200 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(56,189,248,0.18)]">
+                  pixelblast
+                </span>
+              </h1>
+              <div className="text-xs text-white/60">Живой рейтинг • автообновление • онлайн статус</div>
+            </div>
+          </div>
 
           <div className="flex flex-wrap items-center gap-2 text-sm text-white/80 tabular-nums">
             <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/15">
@@ -107,6 +127,7 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Controls */}
         <ControlBar
           order={order}
           onToggleOrder={() => setOrder((p) => (p === "desc" ? "asc" : "desc"))}
@@ -121,6 +142,7 @@ export default function HomePage() {
           setLimitMode={setLimitMode}
         />
 
+        {/* Error */}
         {error ? (
           <div className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
             <div className="font-semibold">Ошибка</div>
@@ -128,6 +150,7 @@ export default function HomePage() {
           </div>
         ) : null}
 
+        {/* Content */}
         <div className="mt-4 space-y-4">
           {loading ? (
             <div className="grid gap-3 md:grid-cols-3">
@@ -139,7 +162,6 @@ export default function HomePage() {
             <TopThree items={filtered} now={now} onOpenPlayer={openPlayer} />
           )}
 
-          {/* ✅ ВАЖНО: тут тоже обязательно now */}
           <PlayerLists items={filtered} now={now} onOpenPlayer={openPlayer} />
           <LeaderboardTable items={filtered} now={now} onOpenPlayer={openPlayer} />
 
@@ -148,12 +170,9 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-      <PlayerQuickModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        player={selectedPlayer}
-        now={now}
-      />
+
+      {/* Quick modal */}
+      <PlayerQuickModal open={modalOpen} onOpenChange={setModalOpen} player={selectedPlayer} now={now} />
     </main>
   );
 }
