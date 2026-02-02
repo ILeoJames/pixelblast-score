@@ -2,173 +2,189 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-type ClientRow = {
+type Row = {
   id: number;
   name: string;
   maxPoints: number;
-  updatedAt: number; // ms
+  updatedAt: number;
 };
 
-type ListPayload = {
-  items: ClientRow[];
-  sort: string;
-  order: "asc" | "desc";
-  limit: number;
-};
+type ApiResponse =
+  | {
+      ok: true;
+      data: {
+        items: Row[];
+      };
+    }
+  | {
+      ok: false;
+      error: string;
+    };
 
 export default function HomePage() {
-  const [items, setItems] = useState<ClientRow[]>([]);
+  const [items, setItems] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false); // чтобы авто-пул не мигал
   const [error, setError] = useState<string | null>(null);
+  const [order, setOrder] = useState<"desc" | "asc">("desc");
 
-  const [order, setOrder] = useState<"asc" | "desc">("desc"); // сортируем по maxPoints
-  const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
+  async function load() {
+  setError(null);
+  setLoading(true);
 
-  async function fetchList(opts?: { silent?: boolean }) {
-    const silent = opts?.silent ?? false;
+  try {
+    const res = await fetch(`/api/client?order=${order}`, { cache: "no-store" });
+    const text = await res.text();
 
-    if (silent) setRefreshing(true);
-    else setLoading(true);
-
-    setError(null);
+    let json: unknown;
     try {
-      const res = await fetch(`/api/clients?sort=maxPoints&order=${order}&limit=200`, { cache: "no-store" });
-      const json = (await res.json()) as { ok: boolean; data: ListPayload; error?: string };
-
-      if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`);
-
-      setItems(json.data.items);
-      setLastUpdatedAt(Date.now());
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "UNKNOWN_ERROR");
-    } finally {
-      if (silent) setRefreshing(false);
-      else setLoading(false);
+      json = JSON.parse(text);
+    } catch {
+      throw new Error(
+        `API вернул не JSON (HTTP ${res.status}). Начало ответа: ${text.slice(0, 80)}`
+      );
     }
+
+    if (typeof json !== "object" || json === null || !("ok" in json)) {
+      throw new Error("Неверный формат ответа API");
+    }
+
+    const api = json as ApiResponse;
+
+    if (!res.ok || api.ok === false) {
+      throw new Error(api.ok === false ? api.error : `HTTP ${res.status}`);
+    }
+
+    setItems(api.data.items);
+  } catch (e) {
+    setError(e instanceof Error ? e.message : "UNKNOWN_ERROR");
+  } finally {
+    setLoading(false);
   }
+}
 
-  // начальная загрузка + автообновление
+
+  // Загружаем список при старте и при смене сортировки
   useEffect(() => {
-    let cancelled = false;
-
-    async function run(initial = false) {
-      if (cancelled) return;
-      await fetchList({ silent: !initial });
-    }
-
-    run(true);
-
-    const t = setInterval(() => run(false), 3000);
-    return () => {
-      cancelled = true;
-      clearInterval(t);
-    };
+    load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order]);
 
-  const headerBadge = useMemo(() => {
-    if (loading) return <Badge variant="secondary" className="h-8">Загрузка…</Badge>;
-    if (refreshing) return <Badge variant="secondary" className="h-8">Обновление…</Badge>;
-    return <Badge variant="outline" className="h-8">Онлайн</Badge>;
-  }, [loading, refreshing]);
+  const sorted = useMemo(() => {
+    const arr = [...items];
+    arr.sort((a, b) => (order === "desc" ? b.maxPoints - a.maxPoints : a.maxPoints - b.maxPoints));
+    return arr;
+  }, [items, order]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <div className="mx-auto max-w-5xl px-4 py-10">
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Клиенты</h1>
-            <p className="text-sm text-muted-foreground">
-              Сортировка: <span className="font-medium text-foreground">maxPoints ({order})</span>.
-              {lastUpdatedAt ? (
-                <span className="ml-2">
-                  Последнее обновление:{" "}
-                  <span className="font-medium text-foreground">
-                    {new Date(lastUpdatedAt).toLocaleTimeString()}
-                  </span>
-                </span>
-              ) : null}
-            </p>
-          </div>
+    <main style={{ padding: 24, maxWidth: 900, margin: "0 auto" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+        <h1 style={{ fontSize: 26, fontWeight: 800 }}>Пользователи</h1>
 
-          <div className="flex items-center gap-2">
-            {headerBadge}
-            <Button
-              variant="secondary"
-              className="h-8"
-              onClick={() => setOrder((p) => (p === "desc" ? "asc" : "desc"))}
-              disabled={loading}
-              title="Переключить сортировку"
-            >
-              maxPoints: {order === "desc" ? "↓" : "↑"}
-            </Button>
-            <Button className="h-8" onClick={() => fetchList({ silent: false })} disabled={loading}>
-              Обновить
-            </Button>
-          </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => setOrder((p) => (p === "desc" ? "asc" : "desc"))}
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              border: "1px solid #ddd",
+              background: "#fff",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            maxPoints {order === "desc" ? "↓" : "↑"}
+          </button>
+
+          <button
+            onClick={load}
+            disabled={loading}
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              border: "1px solid #111",
+              background: loading ? "#333" : "#111",
+              color: "#fff",
+              cursor: loading ? "not-allowed" : "pointer",
+              fontWeight: 700,
+            }}
+          >
+            {loading ? "Загрузка..." : "Обновить"}
+          </button>
         </div>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Список клиентов</CardTitle>
-            <CardDescription>Источник: /api/clients</CardDescription>
-          </CardHeader>
+      {error && (
+        <div style={{ marginTop: 14, padding: 12, borderRadius: 12, border: "1px solid #f2c2c2", background: "#fff5f5" }}>
+          <div style={{ fontWeight: 700, color: "#b42318" }}>Ошибка</div>
+          <div style={{ marginTop: 6, color: "#7a271a" }}>{error}</div>
+        </div>
+      )}
 
-          <CardContent>
-            {loading ? (
-              <div className="space-y-3">
-                <Skeleton className="h-10 w-[50%]" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            ) : error ? (
-              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-                <div className="text-sm font-medium text-destructive">Ошибка</div>
-                <div className="mt-1 text-sm text-muted-foreground">{error}</div>
-              </div>
-            ) : items.length === 0 ? (
-              <div className="rounded-lg border bg-card p-4">
-                <div className="text-sm font-medium">Пока нет клиентов</div>
-                <div className="mt-1 text-sm text-muted-foreground">
-                  Добавь через <code className="rounded bg-muted px-1.5 py-0.5">POST /api/clients</code>.
-                </div>
-              </div>
-            ) : (
-              <div className="overflow-hidden rounded-lg border">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/40">
-                      <TableHead className="w-[15%]">ID</TableHead>
-                      <TableHead className="w-[45%]">Name</TableHead>
-                      <TableHead className="w-[20%]">Max Points</TableHead>
-                      <TableHead className="w-[20%]">Updated</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {items.map((c) => (
-                      <TableRow key={c.id}>
-                        <TableCell className="font-medium">{c.id}</TableCell>
-                        <TableCell>{c.name}</TableCell>
-                        <TableCell>{c.maxPoints.toLocaleString()}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {new Date(c.updatedAt).toLocaleTimeString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+      <div style={{ marginTop: 18, overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 640 }}>
+          <thead>
+            <tr>
+              {["ID", "Name", "Max Points", "Updated"].map((h) => (
+                <th
+                  key={h}
+                  style={{
+                    textAlign: "left",
+                    padding: 12,
+                    borderBottom: "1px solid #e5e7eb",
+                    background: "#f7f7f7",
+                    fontSize: 13,
+                    color: "#111",
+                  }}
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+
+          <tbody>
+            {sorted.map((u) => (
+              <tr key={u.id}>
+                <td style={{ padding: 12, borderBottom: "1px solid #f0f0f0", fontWeight: 700 }}>{u.id}</td>
+                <td style={{ padding: 12, borderBottom: "1px solid #f0f0f0" }}>{u.name}</td>
+                <td style={{ padding: 12, borderBottom: "1px solid #f0f0f0" }}>{u.maxPoints.toLocaleString()}</td>
+                <td style={{ padding: 12, borderBottom: "1px solid #f0f0f0", color: "#666" }}>
+                  {new Date(u.updatedAt).toLocaleString()}
+                </td>
+              </tr>
+            ))}
+
+            {!loading && sorted.length === 0 && (
+              <tr>
+                <td colSpan={4} style={{ padding: 18, color: "#666" }}>
+                  Пока нет пользователей. Отправь POST на <code>/api/client</code>.
+                </td>
+              </tr>
             )}
-          </CardContent>
-        </Card>
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{ marginTop: 18, color: "#666", fontSize: 13 }}>
+        Формат POST:
+        <pre
+          style={{
+            marginTop: 8,
+            background: "#0b1020",
+            color: "#e6edf3",
+            padding: 12,
+            borderRadius: 12,
+            overflowX: "auto",
+          }}
+        >
+{`{
+  "client": {
+    "name": "Nickname",
+    "id": 123456,
+    "maxPoints": 10000
+  }
+}`}
+        </pre>
       </div>
     </main>
   );
