@@ -165,8 +165,19 @@ export default function HomePage() {
           <PlayerLists items={filtered} now={now} onOpenPlayer={openPlayer} />
           <LeaderboardTable items={filtered} now={now} onOpenPlayer={openPlayer} />
 
-          <div className="text-center text-xs text-white/50">
-            Pixelblast leaderboard • фильтры работают поверх данных • автообновление 3 секунды
+          <div className="mt-6 text-center text-xs text-white/60 space-y-1">
+            <div>
+              Разработчик игры:{" "}
+              <span className="font-semibold text-white/80">badcast</span>
+            </div>
+            <div>
+              Разработчик сайта:{" "}
+              <span className="font-semibold text-white/80">LeoJames</span>
+            </div>
+            <div>
+              Дизайнер игры:{" "}
+              <span className="font-semibold text-white/80">AIP</span>
+            </div>
           </div>
         </div>
       </div>
