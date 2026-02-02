@@ -220,6 +220,7 @@ export type ClientWhereInput = {
   maxPoints?: Prisma.IntFilter<"Client"> | number
   createdAt?: Prisma.DateTimeFilter<"Client"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Client"> | Date | string
+  scores?: Prisma.ClientScoreListRelationFilter
 }
 
 export type ClientOrderByWithRelationInput = {
@@ -228,6 +229,7 @@ export type ClientOrderByWithRelationInput = {
   maxPoints?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  scores?: Prisma.ClientScoreOrderByRelationAggregateInput
   _relevance?: Prisma.ClientOrderByRelevanceInput
 }
 
@@ -240,6 +242,7 @@ export type ClientWhereUniqueInput = Prisma.AtLeast<{
   maxPoints?: Prisma.IntFilter<"Client"> | number
   createdAt?: Prisma.DateTimeFilter<"Client"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Client"> | Date | string
+  scores?: Prisma.ClientScoreListRelationFilter
 }, "id">
 
 export type ClientOrderByWithAggregationInput = {
@@ -271,6 +274,7 @@ export type ClientCreateInput = {
   maxPoints: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  scores?: Prisma.ClientScoreCreateNestedManyWithoutClientInput
 }
 
 export type ClientUncheckedCreateInput = {
@@ -279,6 +283,7 @@ export type ClientUncheckedCreateInput = {
   maxPoints: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  scores?: Prisma.ClientScoreUncheckedCreateNestedManyWithoutClientInput
 }
 
 export type ClientUpdateInput = {
@@ -286,6 +291,7 @@ export type ClientUpdateInput = {
   maxPoints?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  scores?: Prisma.ClientScoreUpdateManyWithoutClientNestedInput
 }
 
 export type ClientUncheckedUpdateInput = {
@@ -294,6 +300,7 @@ export type ClientUncheckedUpdateInput = {
   maxPoints?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  scores?: Prisma.ClientScoreUncheckedUpdateManyWithoutClientNestedInput
 }
 
 export type ClientCreateManyInput = {
@@ -359,6 +366,11 @@ export type ClientSumOrderByAggregateInput = {
   maxPoints?: Prisma.SortOrder
 }
 
+export type ClientScalarRelationFilter = {
+  is?: Prisma.ClientWhereInput
+  isNot?: Prisma.ClientWhereInput
+}
+
 export type IntFieldUpdateOperationsInput = {
   set?: number
   increment?: number
@@ -367,6 +379,95 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type ClientCreateNestedOneWithoutScoresInput = {
+  create?: Prisma.XOR<Prisma.ClientCreateWithoutScoresInput, Prisma.ClientUncheckedCreateWithoutScoresInput>
+  connectOrCreate?: Prisma.ClientCreateOrConnectWithoutScoresInput
+  connect?: Prisma.ClientWhereUniqueInput
+}
+
+export type ClientUpdateOneRequiredWithoutScoresNestedInput = {
+  create?: Prisma.XOR<Prisma.ClientCreateWithoutScoresInput, Prisma.ClientUncheckedCreateWithoutScoresInput>
+  connectOrCreate?: Prisma.ClientCreateOrConnectWithoutScoresInput
+  upsert?: Prisma.ClientUpsertWithoutScoresInput
+  connect?: Prisma.ClientWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClientUpdateToOneWithWhereWithoutScoresInput, Prisma.ClientUpdateWithoutScoresInput>, Prisma.ClientUncheckedUpdateWithoutScoresInput>
+}
+
+export type ClientCreateWithoutScoresInput = {
+  name: string
+  maxPoints: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ClientUncheckedCreateWithoutScoresInput = {
+  id?: number
+  name: string
+  maxPoints: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ClientCreateOrConnectWithoutScoresInput = {
+  where: Prisma.ClientWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClientCreateWithoutScoresInput, Prisma.ClientUncheckedCreateWithoutScoresInput>
+}
+
+export type ClientUpsertWithoutScoresInput = {
+  update: Prisma.XOR<Prisma.ClientUpdateWithoutScoresInput, Prisma.ClientUncheckedUpdateWithoutScoresInput>
+  create: Prisma.XOR<Prisma.ClientCreateWithoutScoresInput, Prisma.ClientUncheckedCreateWithoutScoresInput>
+  where?: Prisma.ClientWhereInput
+}
+
+export type ClientUpdateToOneWithWhereWithoutScoresInput = {
+  where?: Prisma.ClientWhereInput
+  data: Prisma.XOR<Prisma.ClientUpdateWithoutScoresInput, Prisma.ClientUncheckedUpdateWithoutScoresInput>
+}
+
+export type ClientUpdateWithoutScoresInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  maxPoints?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ClientUncheckedUpdateWithoutScoresInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  maxPoints?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type ClientCountOutputType
+ */
+
+export type ClientCountOutputType = {
+  scores: number
+}
+
+export type ClientCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  scores?: boolean | ClientCountOutputTypeCountScoresArgs
+}
+
+/**
+ * ClientCountOutputType without action
+ */
+export type ClientCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ClientCountOutputType
+   */
+  select?: Prisma.ClientCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ClientCountOutputType without action
+ */
+export type ClientCountOutputTypeCountScoresArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ClientScoreWhereInput
+}
 
 
 export type ClientSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -375,6 +476,8 @@ export type ClientSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   maxPoints?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  scores?: boolean | Prisma.Client$scoresArgs<ExtArgs>
+  _count?: boolean | Prisma.ClientCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["client"]>
 
 
@@ -388,10 +491,16 @@ export type ClientSelectScalar = {
 }
 
 export type ClientOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "maxPoints" | "createdAt" | "updatedAt", ExtArgs["result"]["client"]>
+export type ClientInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  scores?: boolean | Prisma.Client$scoresArgs<ExtArgs>
+  _count?: boolean | Prisma.ClientCountOutputTypeDefaultArgs<ExtArgs>
+}
 
 export type $ClientPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Client"
-  objects: {}
+  objects: {
+    scores: Prisma.$ClientScorePayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     name: string
@@ -738,6 +847,7 @@ readonly fields: ClientFieldRefs;
  */
 export interface Prisma__ClientClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  scores<T extends Prisma.Client$scoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Client$scoresArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClientScorePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -789,6 +899,10 @@ export type ClientFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Intern
    */
   omit?: Prisma.ClientOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientInclude<ExtArgs> | null
+  /**
    * Filter, which Client to fetch.
    */
   where: Prisma.ClientWhereUniqueInput
@@ -807,6 +921,10 @@ export type ClientFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extensions
    */
   omit?: Prisma.ClientOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientInclude<ExtArgs> | null
+  /**
    * Filter, which Client to fetch.
    */
   where: Prisma.ClientWhereUniqueInput
@@ -824,6 +942,10 @@ export type ClientFindFirstArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Omit specific fields from the Client
    */
   omit?: Prisma.ClientOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientInclude<ExtArgs> | null
   /**
    * Filter, which Client to fetch.
    */
@@ -873,6 +995,10 @@ export type ClientFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions.
    */
   omit?: Prisma.ClientOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientInclude<ExtArgs> | null
+  /**
    * Filter, which Client to fetch.
    */
   where?: Prisma.ClientWhereInput
@@ -921,6 +1047,10 @@ export type ClientFindManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    */
   omit?: Prisma.ClientOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientInclude<ExtArgs> | null
+  /**
    * Filter, which Clients to fetch.
    */
   where?: Prisma.ClientWhereInput
@@ -964,6 +1094,10 @@ export type ClientCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    */
   omit?: Prisma.ClientOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientInclude<ExtArgs> | null
+  /**
    * The data needed to create a Client.
    */
   data: Prisma.XOR<Prisma.ClientCreateInput, Prisma.ClientUncheckedCreateInput>
@@ -992,6 +1126,10 @@ export type ClientUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    * Omit specific fields from the Client
    */
   omit?: Prisma.ClientOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientInclude<ExtArgs> | null
   /**
    * The data needed to update a Client.
    */
@@ -1033,6 +1171,10 @@ export type ClientUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    */
   omit?: Prisma.ClientOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientInclude<ExtArgs> | null
+  /**
    * The filter to search for the Client to update in case it exists.
    */
   where: Prisma.ClientWhereUniqueInput
@@ -1059,6 +1201,10 @@ export type ClientDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    */
   omit?: Prisma.ClientOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientInclude<ExtArgs> | null
+  /**
    * Filter which Client to delete.
    */
   where: Prisma.ClientWhereUniqueInput
@@ -1079,6 +1225,30 @@ export type ClientDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 /**
+ * Client.scores
+ */
+export type Client$scoresArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ClientScore
+   */
+  select?: Prisma.ClientScoreSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ClientScore
+   */
+  omit?: Prisma.ClientScoreOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientScoreInclude<ExtArgs> | null
+  where?: Prisma.ClientScoreWhereInput
+  orderBy?: Prisma.ClientScoreOrderByWithRelationInput | Prisma.ClientScoreOrderByWithRelationInput[]
+  cursor?: Prisma.ClientScoreWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ClientScoreScalarFieldEnum | Prisma.ClientScoreScalarFieldEnum[]
+}
+
+/**
  * Client without action
  */
 export type ClientDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1090,4 +1260,8 @@ export type ClientDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the Client
    */
   omit?: Prisma.ClientOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientInclude<ExtArgs> | null
 }

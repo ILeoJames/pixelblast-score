@@ -55,7 +55,8 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  Client: 'Client'
+  Client: 'Client',
+  ClientScore: 'ClientScore'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -141,6 +142,16 @@ export const ClientScalarFieldEnum = {
 } as const
 
 export type ClientScalarFieldEnum = (typeof ClientScalarFieldEnum)[keyof typeof ClientScalarFieldEnum]
+
+
+export const ClientScoreScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  maxPoints: 'maxPoints',
+  createdAt: 'createdAt'
+} as const
+
+export type ClientScoreScalarFieldEnum = (typeof ClientScoreScalarFieldEnum)[keyof typeof ClientScoreScalarFieldEnum]
 
 
 export const SortOrder = {

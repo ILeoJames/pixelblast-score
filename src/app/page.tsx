@@ -13,6 +13,10 @@ import { TopThree } from "@/components/leaderboard/TopThree";
 import { PlayerLists } from "@/components/leaderboard/PlayerLists";
 import { LeaderboardTable } from "@/components/leaderboard/LeaderboardTable";
 
+import { PlayerQuickModal } from "@/components/player/PlayerQuickModal";
+import type { PlayerRow } from "@/hooks/usePlayers";
+
+
 type LimitMode = "all" | "50" | "200";
 
 export default function HomePage() {
@@ -20,6 +24,14 @@ export default function HomePage() {
   const [query, setQuery] = useState("");
   const [onlineOnly, setOnlineOnly] = useState(false);
   const [limitMode, setLimitMode] = useState<LimitMode>("all");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerRow | null>(null);
+
+  const openPlayer = (p: PlayerRow) => {
+    setSelectedPlayer(p);
+    setModalOpen(true);
+  };
+
 
   const { items, loading, error, lastUpdatedAt, load, status } = usePlayers(order);
 
@@ -124,18 +136,24 @@ export default function HomePage() {
               <Skeleton className="h-[120px] rounded-2xl bg-white/10" />
             </div>
           ) : (
-            <TopThree items={filtered} now={now} />
+            <TopThree items={filtered} now={now} onOpenPlayer={openPlayer} />
           )}
 
           {/* ✅ ВАЖНО: тут тоже обязательно now */}
-          <PlayerLists items={filtered} now={now} />
-          <LeaderboardTable items={filtered} now={now} />
+          <PlayerLists items={filtered} now={now} onOpenPlayer={openPlayer} />
+          <LeaderboardTable items={filtered} now={now} onOpenPlayer={openPlayer} />
 
           <div className="text-center text-xs text-white/50">
             Pixelblast leaderboard • фильтры работают поверх данных • автообновление 3 секунды
           </div>
         </div>
       </div>
+      <PlayerQuickModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        player={selectedPlayer}
+        now={now}
+      />
     </main>
   );
 }

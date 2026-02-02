@@ -2,11 +2,20 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ONLINE_MS, fmtAgo, fmtTime } from "@/utils/time";
 import type { PlayerRow } from "@/hooks/usePlayers";
 
-export function LeaderboardTable({ items, now }: { items: PlayerRow[]; now: number }) {
+export function LeaderboardTable({
+  items,
+  now,
+  onOpenPlayer,
+}: {
+  items: PlayerRow[];
+  now: number;
+  onOpenPlayer: (p: PlayerRow) => void;
+}) {
   return (
     <Card className="rounded-2xl border-white/10 bg-white/10 text-white shadow-2xl backdrop-blur-xl">
       <CardHeader className="pb-3">
@@ -48,7 +57,14 @@ export function LeaderboardTable({ items, now }: { items: PlayerRow[]; now: numb
                           <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-fuchsia-500/30 to-cyan-400/20 ring-1 ring-white/10" />
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <div className="truncate font-semibold">{p.name}</div>
+                              <Button
+                                variant="ghost"
+                                className="h-auto p-0 text-left text-white hover:bg-transparent hover:text-white/90"
+                                onClick={() => onOpenPlayer(p)}
+                              >
+                                <span className="truncate font-semibold">{p.name}</span>
+                              </Button>
+
                               <Badge className={isOnline ? "bg-emerald-400/15 text-emerald-200" : "bg-white/10 text-white/80"}>
                                 {isOnline ? "online" : "offline"}
                               </Badge>

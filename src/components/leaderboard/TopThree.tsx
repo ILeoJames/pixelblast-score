@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ONLINE_MS, fmtAgo } from "@/utils/time";
 import type { PlayerRow } from "@/hooks/usePlayers";
 
@@ -12,7 +13,15 @@ function medal(rank: number) {
   return `#${rank}`;
 }
 
-export function TopThree({ items, now }: { items: PlayerRow[]; now: number }) {
+export function TopThree({
+  items,
+  now,
+  onOpenPlayer,
+}: {
+  items: PlayerRow[];
+  now: number;
+  onOpenPlayer: (p: PlayerRow) => void;
+}) {
   const top3 = items.slice(0, 3);
 
   return (
@@ -33,7 +42,14 @@ export function TopThree({ items, now }: { items: PlayerRow[]; now: number }) {
           >
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center justify-between text-lg">
-                <span className="truncate">{p.name}</span>
+                <Button
+                  variant="ghost"
+                  className="h-auto p-0 text-left text-white hover:bg-transparent hover:text-white/90"
+                  onClick={() => onOpenPlayer(p)}
+                >
+                  <span className="truncate">{p.name}</span>
+                </Button>
+
                 <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold">{medal(i + 1)}</span>
               </CardTitle>
             </CardHeader>

@@ -1,15 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-/**
- * Принимаем 2 формата (на всякий):
- * 1) плоский:
- *    { name, maxPoints }
- *    { id, name, maxPoints }
- * 2) обёртка client:
- *    { client: { name, maxPoints } }
- *    { client: { id, name, maxPoints } }
- */
 type Incoming =
   | { name?: unknown; maxPoints?: unknown; id?: unknown }
   | { client?: { name?: unknown; maxPoints?: unknown; id?: unknown } };
@@ -29,21 +20,16 @@ export async function POST(req: Request) {
   const maxPointsNum = Number(p?.maxPoints);
   const idRaw = p?.id;
 
-  if (!name) {
-    return NextResponse.json({ ok: false, error: "BAD_NAME" }, { status: 400 });
-  }
-  if (!Number.isFinite(maxPointsNum) || maxPointsNum < 0) {
+  if (!name) return NextResponse.json({ ok: false, error: "BAD_NAME" }, { status: 400 });
+  if (!Number.isFinite(maxPointsNum) || maxPointsNum < 0)
     return NextResponse.json({ ok: false, error: "BAD_MAX_POINTS" }, { status: 400 });
-  }
 
   const maxPoints = Math.trunc(maxPointsNum);
 
-  // Если передали ID → обновляем существующего
+  // UPDATE если передали id
   if (idRaw !== undefined && idRaw !== null && String(idRaw).trim() !== "") {
     const id = Number(idRaw);
-    if (!Number.isInteger(id) || id <= 0) {
-      return NextResponse.json({ ok: false, error: "BAD_ID" }, { status: 400 });
-    }
+    if (!Number.isInteger(id) || id <= 0) return NextResponse.json({ ok: false, error: "BAD_ID" }, { status: 400 });
 
     const updated = await prisma.client
       .update({
@@ -52,9 +38,12 @@ export async function POST(req: Request) {
       })
       .catch(() => null);
 
-    if (!updated) {
-      return NextResponse.json({ ok: false, error: "NOT_FOUND" }, { status: 404 });
-    }
+    if (!updated) return NextResponse.json({ ok: false, error: "NOT_FOUND" }, { status: 404 });
+
+    // ✅ Запись в историю (можно писать всегда; или условно только если изменилось)
+    await prisma.clientScore.create({
+      data: { clientId: updated.id, maxPoints: updated.maxPoints },
+    });
 
     return NextResponse.json({
       ok: true,
@@ -69,9 +58,14 @@ export async function POST(req: Request) {
     });
   }
 
-  // Иначе ID нет → создаём нового, id выдаст база
+  // CREATE если id нет
   const created = await prisma.client.create({
     data: { name, maxPoints },
+  });
+
+  // ✅ История при создании
+  await prisma.clientScore.create({
+    data: { clientId: created.id, maxPoints: created.maxPoints },
   });
 
   return NextResponse.json({

@@ -42,3 +42,8 @@ export type Verification = Prisma.VerificationModel
  * 
  */
 export type Client = Prisma.ClientModel
+/**
+ * Model ClientScore
+ * 
+ */
+export type ClientScore = Prisma.ClientScoreModel

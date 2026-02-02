@@ -388,7 +388,8 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  Client: 'Client'
+  Client: 'Client',
+  ClientScore: 'ClientScore'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -404,7 +405,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "client"
+    modelProps: "user" | "session" | "account" | "verification" | "client" | "clientScore"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -738,6 +739,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ClientScore: {
+      payload: Prisma.$ClientScorePayload<ExtArgs>
+      fields: Prisma.ClientScoreFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ClientScoreFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientScorePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ClientScoreFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientScorePayload>
+        }
+        findFirst: {
+          args: Prisma.ClientScoreFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientScorePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ClientScoreFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientScorePayload>
+        }
+        findMany: {
+          args: Prisma.ClientScoreFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientScorePayload>[]
+        }
+        create: {
+          args: Prisma.ClientScoreCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientScorePayload>
+        }
+        createMany: {
+          args: Prisma.ClientScoreCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.ClientScoreDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientScorePayload>
+        }
+        update: {
+          args: Prisma.ClientScoreUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientScorePayload>
+        }
+        deleteMany: {
+          args: Prisma.ClientScoreDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ClientScoreUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.ClientScoreUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientScorePayload>
+        }
+        aggregate: {
+          args: Prisma.ClientScoreAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateClientScore>
+        }
+        groupBy: {
+          args: Prisma.ClientScoreGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClientScoreGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ClientScoreCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClientScoreCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -844,6 +911,16 @@ export const ClientScalarFieldEnum = {
 } as const
 
 export type ClientScalarFieldEnum = (typeof ClientScalarFieldEnum)[keyof typeof ClientScalarFieldEnum]
+
+
+export const ClientScoreScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  maxPoints: 'maxPoints',
+  createdAt: 'createdAt'
+} as const
+
+export type ClientScoreScalarFieldEnum = (typeof ClientScoreScalarFieldEnum)[keyof typeof ClientScoreScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1054,6 +1131,7 @@ export type GlobalOmitConfig = {
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
   client?: Prisma.ClientOmit
+  clientScore?: Prisma.ClientScoreOmit
 }
 
 /* Types for Logging */
