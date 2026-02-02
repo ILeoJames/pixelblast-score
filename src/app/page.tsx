@@ -111,12 +111,12 @@ export default function HomePage() {
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              ТОП игроков <span className="text-white/80">pixelblast</span>
+              ТОП ИГРОКОВ <span className="text-white/80">PIXELBLAST</span>
             </h1>
 
             <div className="flex flex-wrap items-center gap-2 text-sm text-white/80">
               <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/15">
-                автообновление 3с
+                Автообновление 3с
               </Badge>
 
               {lastUpdatedAt ? (
@@ -142,7 +142,7 @@ export default function HomePage() {
               onClick={() => setOrder((p) => (p === "desc" ? "asc" : "desc"))}
               disabled={loading}
             >
-              maxPoints {order === "desc" ? "↓" : "↑"}
+              Рейтинг {order === "desc" ? "↓" : "↑"}
             </Button>
 
             <Button className="bg-white text-black hover:bg-white/90" onClick={() => load({ silent: false })} disabled={loading}>
@@ -189,7 +189,7 @@ export default function HomePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex items-end justify-between">
-                  <div className="text-sm text-white/70">maxPoints</div>
+                  <div className="text-sm text-white/70">Рейтинг</div>
                   <div className="text-2xl font-extrabold">{p.maxPoints.toLocaleString()}</div>
                 </CardContent>
               </Card>
@@ -257,7 +257,7 @@ export default function HomePage() {
         </Card>
 
         <div className="mt-6 text-center text-xs text-white/50">
-          Pixelblast leaderboard • данные обновляются автоматически
+          Created by LeoJames & badcast & AIP
         </div>
       </div>
     </main>
