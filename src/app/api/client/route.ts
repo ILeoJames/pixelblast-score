@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   if (id <= 0) {
     return NextResponse.json({ ok: false, error: "BAD_ID" }, { status: 400 });
   }
-  if (!name) {
+  if (name.length <= 0) {
     return NextResponse.json({ ok: false, error: "BAD_NAME" }, { status: 400 });
   }
   if (maxPoints < 0) {
