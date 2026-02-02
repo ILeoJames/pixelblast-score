@@ -267,7 +267,6 @@ export type ClientScalarWhereWithAggregatesInput = {
 }
 
 export type ClientCreateInput = {
-  id: number
   name: string
   maxPoints: number
   createdAt?: Date | string
@@ -275,7 +274,7 @@ export type ClientCreateInput = {
 }
 
 export type ClientUncheckedCreateInput = {
-  id: number
+  id?: number
   name: string
   maxPoints: number
   createdAt?: Date | string
@@ -283,7 +282,6 @@ export type ClientUncheckedCreateInput = {
 }
 
 export type ClientUpdateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   maxPoints?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -299,7 +297,7 @@ export type ClientUncheckedUpdateInput = {
 }
 
 export type ClientCreateManyInput = {
-  id: number
+  id?: number
   name: string
   maxPoints: number
   createdAt?: Date | string
@@ -307,7 +305,6 @@ export type ClientCreateManyInput = {
 }
 
 export type ClientUpdateManyMutationInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   maxPoints?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
