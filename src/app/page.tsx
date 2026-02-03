@@ -178,7 +178,7 @@ export default function HomePage() {
             Разработчик игры:{" "}
             <span className="font-semibold text-white/80">badcast</span>
             <span className="mx-2 text-white/30">•</span>
-            Разработчик сайта:{" "}
+            Разработчик сайта и backend:{" "}
             <span className="font-semibold text-white/80">LeoJames</span>
             <span className="mx-2 text-white/30">•</span>
             Дизайнер игры:{" "}
