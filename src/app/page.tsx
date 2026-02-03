@@ -102,9 +102,6 @@ export default function HomePage() {
 
           {/* Stats centered */}
           <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-2 text-sm text-white/80 tabular-nums">
-            <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/15">
-              автообновление
-            </Badge>
 
             <span className="rounded-full bg-white/10 px-3 py-1">
               всего: <span className="font-semibold text-white">{items.length}</span>
