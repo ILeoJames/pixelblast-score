@@ -41,9 +41,9 @@ export async function POST(req: Request) {
     if (!updated) return NextResponse.json({ ok: false, error: "NOT_FOUND" }, { status: 404 });
 
     // ✅ Запись в историю (можно писать всегда; или условно только если изменилось)
-    await prisma.clientScore.create({
-      data: { clientId: updated.id, maxPoints: updated.maxPoints },
-    });
+    // await prisma.clientScore.create({
+    //   data: { clientId: updated.id, maxPoints: updated.maxPoints },
+    // });
 
     return NextResponse.json({
       ok: true,
