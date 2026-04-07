@@ -120,9 +120,9 @@ export function PlayerLists({
             </div>
           )}
 
-          <div className="mt-3 text-xs text-white/60">
+          {/* <div className="mt-3 text-xs text-white/60">
             Онлайн = последнее обновление ≤ <span className="font-semibold text-white/80">10 минут</span>.
-          </div>
+          </div> */}
         </CardContent>
       </Card>
     </div>

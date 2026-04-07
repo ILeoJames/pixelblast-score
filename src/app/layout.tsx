@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PixelGame",
-  description: "Топ игроков",
+  title: "PixelBlast",
+  description: "Топ игроков PixelBlast",
 };
 
 export default function RootLayout({
