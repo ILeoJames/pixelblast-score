@@ -21,7 +21,7 @@ export function LeaderboardTable({
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-white">
           <span>Таблица рейтинга</span>
-          <span className="text-xs text-white/60">updatedAt + Last seen + online/offline</span>
+          <span className="text-xs text-white/60">Дата создания + Последний визит + online/offline</span>
         </CardTitle>
       </CardHeader>
 
@@ -36,8 +36,8 @@ export function LeaderboardTable({
                   <TableHead className="w-[90px] text-white/80">#</TableHead>
                   <TableHead className="text-white/80">Игрок</TableHead>
                   <TableHead className="text-right text-white/80">Рейтинг</TableHead>
-                  <TableHead className="text-right text-white/80">updatedAt</TableHead>
-                  <TableHead className="text-right text-white/80">Last seen</TableHead>
+                  <TableHead className="text-right text-white/80">Дата создания</TableHead>
+                  <TableHead className="text-right text-white/80">Последний визит</TableHead>
                 </TableRow>
               </TableHeader>
 

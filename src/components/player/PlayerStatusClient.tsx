@@ -14,8 +14,8 @@ export function PlayerStatusClient({ updatedAt }: { updatedAt: number }) {
         <Badge className={isOnline ? "bg-emerald-400/15 text-emerald-200" : "bg-white/10 text-white/80"}>
           {isOnline ? "online" : "offline"}
         </Badge>
-        <span>updatedAt: {fmtTime(updatedAt)}</span>
-        <span>• Last seen: {fmtAgo(now - updatedAt)}</span>
+        <span>Дата создания: {fmtTime(updatedAt)}</span>
+        <span>• Последний визит: {fmtAgo(now - updatedAt)}</span>
       </div>
     </div>
   );

@@ -70,7 +70,7 @@ export default async function PlayerPage({ params }: { params: { id: string } })
             </div>
 
             <div className="mt-1 text-sm text-white/70">
-              maxPoints: <span className="font-semibold text-white/90">{client.maxPoints.toLocaleString()}</span>
+              Поинтов: <span className="font-semibold text-white/90">{client.maxPoints.toLocaleString()}</span>
             </div>
 
             {/* ✅ Вот тут теперь всё “живое” и чистое */}
@@ -90,7 +90,7 @@ export default async function PlayerPage({ params }: { params: { id: string } })
             <CardContent>
               {chartData.length < 2 ? (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-white/80">
-                  Недостаточно данных для графика. Отправь несколько обновлений maxPoints.
+                  Недостаточно данных для графика. Отправь несколько обновлений Поинтов.
                 </div>
               ) : (
                 <PlayerChart data={chartData} />
