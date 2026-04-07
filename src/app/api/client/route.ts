@@ -21,8 +21,9 @@ export async function POST(req: Request) {
   const idRaw = p?.id;
 
   if (!name) return NextResponse.json({ ok: false, error: "BAD_NAME" }, { status: 400 });
-  if (!Number.isFinite(maxPointsNum) || maxPointsNum < 0)
+  if (!Number.isFinite(maxPointsNum) || maxPointsNum < 0) {
     return NextResponse.json({ ok: false, error: "BAD_MAX_POINTS" }, { status: 400 });
+  }
 
   const maxPoints = Math.trunc(maxPointsNum);
 
@@ -90,8 +91,9 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
 
   const idParam = url.searchParams.get("id");
+  const topParam = url.searchParams.get("top");
 
-  // Если передан id -> вернуть только одного клиента
+  // 1. Если передан id -> вернуть одного клиента
   if (idParam !== null && idParam.trim() !== "") {
     const id = Number(idParam);
 
@@ -120,7 +122,34 @@ export async function GET(req: Request) {
     });
   }
 
-  // Если id нет -> вернуть список как раньше
+  // 2. Если передан top -> вернуть топ N по maxPoints
+  if (topParam !== null && topParam.trim() !== "") {
+    const top = Number(topParam);
+
+    if (!Number.isInteger(top) || top <= 0) {
+      return NextResponse.json({ ok: false, error: "BAD_TOP" }, { status: 400 });
+    }
+
+    const clients = await prisma.client.findMany({
+      orderBy: [{ maxPoints: "desc" }, { id: "asc" }],
+      take: top,
+    });
+
+    return NextResponse.json({
+      ok: true,
+      data: {
+        items: clients.map((c) => ({
+          id: c.id,
+          name: c.name,
+          maxPoints: c.maxPoints,
+          updatedAt: c.updatedAt.getTime(),
+        })),
+        top,
+      },
+    });
+  }
+
+  // 3. Если ничего нет -> старое поведение
   const order = (url.searchParams.get("order") ?? "desc").toLowerCase() === "asc" ? "asc" : "desc";
 
   const clients = await prisma.client.findMany({
