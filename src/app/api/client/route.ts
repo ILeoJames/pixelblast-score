@@ -29,7 +29,9 @@ export async function POST(req: Request) {
   // UPDATE если передали id
   if (idRaw !== undefined && idRaw !== null && String(idRaw).trim() !== "") {
     const id = Number(idRaw);
-    if (!Number.isInteger(id) || id <= 0) return NextResponse.json({ ok: false, error: "BAD_ID" }, { status: 400 });
+    if (!Number.isInteger(id) || id <= 0) {
+      return NextResponse.json({ ok: false, error: "BAD_ID" }, { status: 400 });
+    }
 
     const updated = await prisma.client
       .update({
@@ -40,14 +42,13 @@ export async function POST(req: Request) {
 
     if (!updated) return NextResponse.json({ ok: false, error: "NOT_FOUND" }, { status: 404 });
 
-    // ✅ Запись в историю (можно писать всегда; или условно только если изменилось)
     if (updated.maxPoints && updated.maxPoints > 0) {
-    await prisma.clientScore.create({
-      data: {
-        clientId: updated.id,
-        maxPoints: updated.maxPoints,
-      },
-    });
+      await prisma.clientScore.create({
+        data: {
+          clientId: updated.id,
+          maxPoints: updated.maxPoints,
+        },
+      });
     }
 
     return NextResponse.json({
@@ -68,7 +69,6 @@ export async function POST(req: Request) {
     data: { name, maxPoints },
   });
 
-  // ✅ История при создании
   await prisma.clientScore.create({
     data: { clientId: created.id, maxPoints: created.maxPoints },
   });
@@ -88,6 +88,39 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
+
+  const idParam = url.searchParams.get("id");
+
+  // Если передан id -> вернуть только одного клиента
+  if (idParam !== null && idParam.trim() !== "") {
+    const id = Number(idParam);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return NextResponse.json({ ok: false, error: "BAD_ID" }, { status: 400 });
+    }
+
+    const client = await prisma.client.findUnique({
+      where: { id },
+    });
+
+    if (!client) {
+      return NextResponse.json({ ok: false, error: "NOT_FOUND" }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      ok: true,
+      data: {
+        client: {
+          id: client.id,
+          name: client.name,
+          maxPoints: client.maxPoints,
+          updatedAt: client.updatedAt.getTime(),
+        },
+      },
+    });
+  }
+
+  // Если id нет -> вернуть список как раньше
   const order = (url.searchParams.get("order") ?? "desc").toLowerCase() === "asc" ? "asc" : "desc";
 
   const clients = await prisma.client.findMany({
