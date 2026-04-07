@@ -65,7 +65,7 @@ export function TopThree({
                   {isOnline ? "online" : "offline"}
                 </Badge>
                 <div className="text-xs text-white/70">
-                  Last seen: <span className="text-white/90 font-semibold">{fmtAgo(ago)}</span>
+                  Последний визит: <span className="text-white/90 font-semibold">{fmtAgo(ago)}</span>
                 </div>
               </div>
             </CardContent>

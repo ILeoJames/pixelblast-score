@@ -59,7 +59,7 @@ export function PlayerLists({
                         </div>
 
                         <div className="text-xs text-white/60">
-                          ID: {p.id} • Last seen: {fmtAgo(ago)}
+                          ID: {p.id} • Последний визит: {fmtAgo(ago)}
                         </div>
                       </div>
 
@@ -106,7 +106,7 @@ export function PlayerLists({
                         </div>
 
                         <div className="text-xs text-white/60">
-                          ID: {p.id} • Last seen: <span className="font-semibold text-emerald-200">{fmtAgo(ago)}</span>
+                          ID: {p.id} • Последний визит: <span className="font-semibold text-emerald-200">{fmtAgo(ago)}</span>
                         </div>
                       </div>
 
