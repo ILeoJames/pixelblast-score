@@ -6,11 +6,11 @@ export function fmtTime(ts: number) {
 
 export function fmtAgo(msAgo: number) {
   const s = Math.floor(msAgo / 1000);
-  if (s < 60) return `${s}s ago`;
+  if (s < 60) return `${s}с назад`;
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return `${m}м назад`;
   const h = Math.floor(m / 60);
-  if (h < 48) return `${h}h ago`;
+  if (h < 48) return `${h}ч назад`;
   const d = Math.floor(h / 24);
-  return `${d}d ago`;
+  return `${d}д назад`;
 }
